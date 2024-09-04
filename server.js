@@ -1,3 +1,10 @@
+//! Preparación 
+// npm init -y
+// npm install express dotenv morgan express-async-errors
+// touch server.js
+// touch .env (Port = 3000)
+
+
 require('dotenv').config(); //Carga las variables de entorno desde el archivo .env
 require('express-async-errors'); //Maneja las excepciones asincronas en Express
 
