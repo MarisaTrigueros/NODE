@@ -15,14 +15,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.jwtStrategy = void 0;
 const passport_jwt_1 = require("passport-jwt");
 const passport_1 = __importDefault(require("passport"));
-const User_1 = require("../src/models/User");
+const dotenv_1 = __importDefault(require("dotenv"));
+const db_1 = __importDefault(require("./db"));
+dotenv_1.default.config();
 const opts = {
     jwtFromRequest: passport_jwt_1.ExtractJwt.fromAuthHeaderAsBearerToken(),
     secretOrKey: process.env.SECRET,
 };
 exports.jwtStrategy = new passport_jwt_1.Strategy(opts, (jwt_payload, done) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const user = yield User_1.User.findById(jwt_payload.id);
+        const user = yield db_1.default.oneOrNone('SELECT * FROM users WHERE id = $1', [jwt_payload.id]);
         if (user) {
             return done(null, user);
         }

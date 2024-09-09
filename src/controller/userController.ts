@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import db from '../db';
 
 // Función para registrar un nuevo usuario
@@ -14,11 +15,28 @@ export const registerUser = async (req: Request, res: Response) => {
         await db.none('INSERT INTO users (username, password) VALUES ($1, $2)', [username, hashedPassword]);
 
         res.status(201).json({ message: 'User registered successfully' });
-    } catch (err: unknown) {
-        if (err instanceof Error) {
-          res.status(500).json({ message: 'Error registering user', error: err.message });
-        } else {
-            res.status(500).json({ message: 'Unknown error occurred' });
-        };
+    } catch (err) {
+        res.status(500).json({ message: 'Error registering user', error: err });
+      }
     };
-};
+
+
+    export const loginUser = async (req: Request, res: Response) => {
+        const { username, password } = req.body;
+        try {
+          const user = await db.oneOrNone('SELECT * FROM users WHERE username = $1', [username]);
+          if (!user) {
+            return res.status(401).json({ message: 'User not found' });
+          }
+      
+          const isMatch = await bcrypt.compare(password, user.password);
+          if (!isMatch) {
+            return res.status(401).json({ message: 'Invalid password' });
+          }
+      
+          const token = jwt.sign({ id: user.id }, process.env.SECRET as string, { expiresIn: '1h' });
+          res.json({ token });
+        } catch (err) {
+          res.status(500).json({ message: 'Server error', error: err });
+        }
+      };

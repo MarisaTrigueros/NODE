@@ -12,8 +12,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.registerUser = void 0;
+exports.loginUser = exports.registerUser = void 0;
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const db_1 = __importDefault(require("../db"));
 // Función para registrar un nuevo usuario
 const registerUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -26,14 +27,26 @@ const registerUser = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         res.status(201).json({ message: 'User registered successfully' });
     }
     catch (err) {
-        if (err instanceof Error) {
-            res.status(500).json({ message: 'Error registering user', error: err.message });
-        }
-        else {
-            res.status(500).json({ message: 'Unknown error occurred' });
-        }
-        ;
+        res.status(500).json({ message: 'Error registering user', error: err });
     }
-    ;
 });
 exports.registerUser = registerUser;
+const loginUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { username, password } = req.body;
+    try {
+        const user = yield db_1.default.oneOrNone('SELECT * FROM users WHERE username = $1', [username]);
+        if (!user) {
+            return res.status(401).json({ message: 'User not found' });
+        }
+        const isMatch = yield bcryptjs_1.default.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Invalid password' });
+        }
+        const token = jsonwebtoken_1.default.sign({ id: user.id }, process.env.SECRET, { expiresIn: '1h' });
+        res.json({ token });
+    }
+    catch (err) {
+        res.status(500).json({ message: 'Server error', error: err });
+    }
+});
+exports.loginUser = loginUser;
