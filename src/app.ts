@@ -13,7 +13,7 @@ app.use(express.json());
 app.use(passport.initialize());
 passport.use(jwtStrategy);
 
-app.use('/api/users', userRoutes);
+app.use('/api', userRoutes);
 
 
 app.listen(PORT, () => {

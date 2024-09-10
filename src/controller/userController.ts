@@ -3,6 +3,15 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import db from '../db';
 
+export const getAllUsers = async (req: Request, res: Response) => {
+  try {
+    const users = await db.any('SELECT * FROM users');
+    res.status(200).json(users);
+  } catch (err) {
+    res.status(500).json({ message: 'Error getting users', error: err });
+  }
+}
+
 // Función para registrar un nuevo usuario
 export const registerUser = async (req: Request, res: Response) => {
     const { username, password } = req.body;
@@ -35,7 +44,8 @@ export const registerUser = async (req: Request, res: Response) => {
           }
       
           const token = jwt.sign({ id: user.id }, process.env.SECRET as string, { expiresIn: '1h' });
-          res.json({ token });
+          res.json({ token, 'id': user.id, 'username': user.username });
+          
         } catch (err) {
           res.status(500).json({ message: 'Server error', error: err });
         }

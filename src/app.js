@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express_1.default.json());
 app.use(passport_1.default.initialize());
 passport_1.default.use(passport_config_1.jwtStrategy);
-app.use('/api/users', userRoutes_1.default);
+app.use('/api', userRoutes_1.default);
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
 });
